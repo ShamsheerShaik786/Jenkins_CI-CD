@@ -1,7 +1,9 @@
 **MAster Slave Architecture of Jenkins**
+
 This is used distribute the work load to additional linux servers called as slaves.This is used when we want to run multiple jobs on jenkins parallelly.
 
 **Setup & Installations**
+
 1 Create a 2 Ubuntu linux Servers and name them as Master and Slave
 
 2 Install the same version of java as present in the master
