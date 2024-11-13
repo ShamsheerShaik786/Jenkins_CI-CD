@@ -1,0 +1,43 @@
+pipeline
+{
+    agent any
+    stages
+    {
+        stage('ContinuousDownload')
+        {
+            steps
+            {
+               git 'https://github.com/ShamsheerShaik786/maven-demo-project.git'
+            }
+        }
+        stage('ContinuousBuild')
+        {
+            steps
+            {
+                sh 'mvn package'
+            }
+        }
+        stage('ContinousDeployment')
+        {
+            steps
+            {
+                deploy adapters: [tomcat9(credentialsId: 'e9ecf56d-c63d-4116-90cf-7bc5fde05fce', path: '', url: 'http://172.31.25.126:8080')], contextPath: 'TestingApp', war: '**/*.war'
+            }
+        }
+        stage('ContinuousTesting')
+        {
+            steps
+            {
+                git 'https://github.com/ShamsheerShaik786/Functional-Testing.git'
+                sh 'java -jar /var/lib/jenkins/workspace/DeclerativePipeline1/testing.jar'
+            }
+        }
+        stage('ContinuousDelivery')
+        {
+            steps
+            {
+                deploy adapters: [tomcat9(credentialsId: 'e9ecf56d-c63d-4116-90cf-7bc5fde05fce', path: '', url: 'http://172.31.23.167:8080')], contextPath: 'ProductionApp', war: '**/*.war'
+            }
+        }
+    }
+}
