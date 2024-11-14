@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+    stages {
+        stage('ContinuousDownload') {
+            steps {
+                script {
+                    try {
+                        git 'https://github.com/ShamsheerShaik786/maven-demo-project.git'
+                    } catch(Exception e1) {
+                        mail bcc: '', body: 'Jenkins is unable to download the code from GitHub', cc: '', from: '', replyTo: '', subject: 'Download Failed', to: 'git.admin@gmail.com'
+                        error('Download failed')
+                    }
+                }
+            }
+        }
+        
+        stage('ContinuousBuild') {
+            steps {
+                script {
+                    try {
+                        sh 'mvn package'
+                    } catch(Exception e2) {
+                        mail bcc: '', body: 'Jenkins is unable to create an artifact from the downloaded code', cc: '', from: '', replyTo: '', subject: 'Build Failed', to: 'dev.team@gmail.com'
+                        error('Build failed')
+                    }
+                }
+            }
+        }
+        
+        stage('ContinuousDeployment') {
+            steps {
+                script {
+                    try {
+                        sh 'scp /var/lib/jenkins/workspace/DeclerativePipeline3/webapp/target/webapp.war ubuntu@172.31.16.55:/var/lib/tomcat10/webapps/TestingApp.war'
+                    } catch(Exception e3) {
+                        mail bcc: '', body: 'Jenkins is unable to deploy into Tomcat on the QA servers', cc: '', from: '', replyTo: '', subject: 'Deployment Failed', to: 'middleware.team@gmail.com'
+                        error('Deployment failed')
+                    }
+                }
+            }
+        }
+        
+        stage('ContinuousTesting') {
+            steps {
+                script {
+                    try {
+                        git 'https://github.com/ShamsheerShaik786/Functional-Testing.git'
+                        sh 'java -jar /var/lib/jenkins/workspace/DeclerativePipeline3/testing.jar'
+                    } catch(Exception e4) {
+                        mail bcc: '', body: 'Selenium scripts are showing a failure status', cc: '', from: '', replyTo: '', subject: 'Testing Failed', to: 'qa.team@gmail.com'
+                        error('Testing failed')
+                    }
+                }
+            }
+        }
+        
+        stage('ContinuousDelivery') {
+            steps {
+                script {
+                    try {
+                        input message: 'Approval Needed from Delivery Manager', submitter: 'deliveryManager'
+                        sh 'scp /var/lib/jenkins/workspace/DeclerativePipeline3/webapp/target/webapp.war ubuntu@172.31.17.231:/var/lib/tomcat10/webapps/ProdApp.war'
+                    } catch(Exception e5) {
+                        mail bcc: '', body: 'Jenkins is unable to deploy into Tomcat on the production servers', cc: '', from: '', replyTo: '', subject: 'Delivery Failed', to: 'delivery.team@gmail.com'
+                        error('Delivery failed')
+                    }
+                }
+            }
+        }
+    }
+}
